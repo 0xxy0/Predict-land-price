@@ -1,0 +1,42 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Generated data
+data/processed/
+data/interim/
+
+# Generated model artifacts
+models/*.joblib
+models/*.pkl
+models/*.pickle
+
+# Logs
+*.log
+logs/
+
+# Notebook artifacts
+.ipynb_checkpoints/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+plan.txt
