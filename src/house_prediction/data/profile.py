@@ -16,14 +16,9 @@ def profile_frame(frame: pd.DataFrame) -> dict[str, Any]:
         "column_count": int(len(frame.columns)),
         "columns": frame.columns.tolist(),
         "dtypes": {column: str(dtype) for column, dtype in frame.dtypes.items()},
-        "missing_values": {
-            column: int(count) for column, count in frame.isnull().sum().items()
-        },
+        "missing_values": {column: int(count) for column, count in frame.isnull().sum().items()},
         "duplicate_rows": int(frame.duplicated().sum()),
-        "unique_counts": {
-            column: int(unique)
-            for column, unique in frame.nunique(dropna=False).items()
-        },
+        "unique_counts": {column: int(unique) for column, unique in frame.nunique(dropna=False).items()},
         "validation_issues": [
             {
                 "rule": issue.rule,
@@ -72,11 +67,7 @@ def write_markdown_report(
     ]
 
     for column in report["columns"]:
-        lines.append(
-            f"| {column} | {report['dtypes'][column]} | "
-            f"{report['missing_values'][column]} | "
-            f"{report['unique_counts'][column]} |"
-        )
+        lines.append(f"| {column} | {report['dtypes'][column]} | {report['missing_values'][column]} | {report['unique_counts'][column]} |")
 
     lines.extend(
         [
@@ -95,10 +86,7 @@ def write_markdown_report(
         )
 
         for issue in report["validation_issues"]:
-            lines.append(
-                f"| {issue['rule']} | {issue['column'] or ''} | "
-                f"{issue['severity']} | {issue['count']} |"
-            )
+            lines.append(f"| {issue['rule']} | {issue['column'] or ''} | {issue['severity']} | {issue['count']} |")
     else:
         lines.append("No validation issues found.")
 

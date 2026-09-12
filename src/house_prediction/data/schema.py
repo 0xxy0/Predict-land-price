@@ -146,9 +146,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
                     column=column,
                     severity=Severity.ERROR,
                     count=int(invalid_mask.sum()),
-                    details={
-                        "values": frame.loc[invalid_mask, column].astype(str).tolist()
-                    },
+                    details={"values": frame.loc[invalid_mask, column].astype(str).tolist()},
                 )
             )
 
@@ -176,11 +174,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
             continue
 
         numeric_values = pd.to_numeric(frame[column], errors="coerce")
-        invalid_mask = (
-            frame[column].notna()
-            & numeric_values.notna()
-            & ~numeric_values.isin(allowed_values)
-        )
+        invalid_mask = frame[column].notna() & numeric_values.notna() & ~numeric_values.isin(allowed_values)
 
         if invalid_mask.any():
             issues.append(
@@ -207,9 +201,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
                     column=column,
                     severity=Severity.ERROR,
                     count=int(invalid_mask.sum()),
-                    details={
-                        "values": frame.loc[invalid_mask, column].astype(str).tolist()
-                    },
+                    details={"values": frame.loc[invalid_mask, column].astype(str).tolist()},
                 )
             )
 
@@ -219,17 +211,9 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
 
         numeric_values = pd.to_numeric(frame[column], errors="coerce")
         if column in {"price", "sqft_living", "sqft_lot"}:
-            invalid_mask = (
-                frame[column].notna()
-                & numeric_values.notna()
-                & (numeric_values <= minimum)
-            )
+            invalid_mask = frame[column].notna() & numeric_values.notna() & (numeric_values <= minimum)
         else:
-            invalid_mask = (
-                frame[column].notna()
-                & numeric_values.notna()
-                & (numeric_values < minimum)
-            )
+            invalid_mask = frame[column].notna() & numeric_values.notna() & (numeric_values < minimum)
 
         if invalid_mask.any():
             issues.append(
@@ -252,10 +236,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
         )
 
         complete_mask = square_footage.notna().all(axis=1)
-        inconsistent_mask = complete_mask & (
-            square_footage["sqft_above"] + square_footage["sqft_basement"]
-            != square_footage["sqft_living"]
-        )
+        inconsistent_mask = complete_mask & (square_footage["sqft_above"] + square_footage["sqft_basement"] != square_footage["sqft_living"])
 
         if inconsistent_mask.any():
             issues.append(
@@ -273,9 +254,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
 
     if "statezip" in actual_columns:
         statezip_values = frame["statezip"].astype("string")
-        invalid_mask = frame["statezip"].notna() & ~statezip_values.str.match(
-            STATEZIP_PATTERN, na=False
-        )
+        invalid_mask = frame["statezip"].notna() & ~statezip_values.str.match(STATEZIP_PATTERN, na=False)
 
         if invalid_mask.any():
             issues.append(
@@ -284,11 +263,7 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
                     column="statezip",
                     severity=Severity.ERROR,
                     count=int(invalid_mask.sum()),
-                    details={
-                        "values": frame.loc[invalid_mask, "statezip"]
-                        .astype(str)
-                        .tolist()
-                    },
+                    details={"values": frame.loc[invalid_mask, "statezip"].astype(str).tolist()},
                 )
             )
 
@@ -302,17 +277,9 @@ def validate_frame(frame: pd.DataFrame) -> list[ValidationIssue]:
 
         sale_years = sale_dates.dt.year
 
-        comparable_mask = (
-            sale_years.notna() & built_years.notna() & renovated_years.notna()
-        )
+        comparable_mask = sale_years.notna() & built_years.notna() & renovated_years.notna()
 
-        invalid_year_mask = comparable_mask & (
-            (built_years > sale_years)
-            | (
-                (renovated_years != 0)
-                & ((renovated_years < built_years) | (renovated_years > sale_years))
-            )
-        )
+        invalid_year_mask = comparable_mask & ((built_years > sale_years) | ((renovated_years != 0) & ((renovated_years < built_years) | (renovated_years > sale_years))))
 
         if invalid_year_mask.any():
             issues.append(

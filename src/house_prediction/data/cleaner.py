@@ -50,9 +50,7 @@ def clean_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningAudit]:
     warnings: list[str] = []
 
     columns = frame.columns.tolist()
-    normalized_columns = [
-        str(column).strip().lower().replace(" ", "_") for column in columns
-    ]
+    normalized_columns = [str(column).strip().lower().replace(" ", "_") for column in columns]
     if columns != normalized_columns:
         frame.columns = normalized_columns
         changed_by_rule["normalize_column_names"] = len(columns)
@@ -71,9 +69,7 @@ def clean_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningAudit]:
 
     original_statezip = frame["statezip"].astype("string")
     normalized_statezip = original_statezip.str.strip().str.upper()
-    statezip_changed = int(
-        (normalized_statezip != original_statezip).fillna(False).sum()
-    )
+    statezip_changed = int((normalized_statezip != original_statezip).fillna(False).sum())
     if statezip_changed:
         frame["statezip"] = normalized_statezip
         changed_by_rule["normalize_statezip"] = statezip_changed
@@ -133,13 +129,7 @@ def clean_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningAudit]:
     )
 
     sale_year = frame["date"].dt.year
-    invalid_year_mask = (frame["yr_built"] > sale_year) | (
-        (frame["yr_renovated"] != 0)
-        & (
-            (frame["yr_renovated"] < frame["yr_built"])
-            | (frame["yr_renovated"] > sale_year)
-        )
-    )
+    invalid_year_mask = (frame["yr_built"] > sale_year) | ((frame["yr_renovated"] != 0) & ((frame["yr_renovated"] < frame["yr_built"]) | (frame["yr_renovated"] > sale_year)))
     frame = _record_removed(
         frame,
         invalid_year_mask,
@@ -148,9 +138,7 @@ def clean_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningAudit]:
         warnings,
     )
 
-    square_footage_mismatch = (
-        frame["sqft_above"] + frame["sqft_basement"] != frame["sqft_living"]
-    )
+    square_footage_mismatch = frame["sqft_above"] + frame["sqft_basement"] != frame["sqft_living"]
     frame = _record_removed(
         frame,
         square_footage_mismatch,
@@ -168,9 +156,7 @@ def clean_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningAudit]:
         warnings,
     )
 
-    split_statezip = frame["statezip"].str.extract(
-        r"^(?P<state>[A-Z]{2}) (?P<zip_code>\d{5})$"
-    )
+    split_statezip = frame["statezip"].str.extract(r"^(?P<state>[A-Z]{2}) (?P<zip_code>\d{5})$")
     if len(frame) and ("state" not in frame.columns or "zip_code" not in frame.columns):
         frame = frame.assign(
             state=split_statezip["state"].astype("string"),

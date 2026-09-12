@@ -108,9 +108,7 @@ def test_extra_column_is_reported_as_warning() -> None:
 
 
 def test_missing_and_extra_columns_produce_two_issues() -> None:
-    frame = pd.DataFrame(
-        columns=sorted((REQUIRED_COLUMNS - {"price"}) | {"source_file"})
-    )
+    frame = pd.DataFrame(columns=sorted((REQUIRED_COLUMNS - {"price"}) | {"source_file"}))
 
     issues = validate_frame(frame)
 
@@ -129,9 +127,7 @@ def test_non_numeric_value_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    numeric_issue = next(
-        issue for issue in issues if issue.rule == "non_numeric_values"
-    )
+    numeric_issue = next(issue for issue in issues if issue.rule == "non_numeric_values")
 
     assert numeric_issue.column == "price"
     assert numeric_issue.severity == Severity.ERROR
@@ -196,11 +192,7 @@ def test_missing_feature_is_reported_as_warning() -> None:
 
     issues = validate_frame(frame)
 
-    missing_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "missing_values" and issue.column == "bedrooms"
-    )
+    missing_issue = next(issue for issue in issues if issue.rule == "missing_values" and issue.column == "bedrooms")
 
     assert missing_issue.severity == Severity.WARNING
     assert missing_issue.count == 1
@@ -217,11 +209,7 @@ def test_missing_value_count_is_per_column() -> None:
 
     issues = validate_frame(frame)
 
-    missing_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "missing_values" and issue.column == "bedrooms"
-    )
+    missing_issue = next(issue for issue in issues if issue.rule == "missing_values" and issue.column == "bedrooms")
 
     assert missing_issue.count == 2
 
@@ -246,11 +234,7 @@ def test_invalid_categorical_code_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    domain_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "invalid_category" and issue.column == "waterfront"
-    )
+    domain_issue = next(issue for issue in issues if issue.rule == "invalid_category" and issue.column == "waterfront")
 
     assert domain_issue.severity == Severity.ERROR
     assert domain_issue.count == 1
@@ -333,11 +317,7 @@ def test_non_positive_price_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    range_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "out_of_range" and issue.column == "price"
-    )
+    range_issue = next(issue for issue in issues if issue.rule == "out_of_range" and issue.column == "price")
 
     assert range_issue.severity == Severity.ERROR
     assert range_issue.count == 1
@@ -351,10 +331,7 @@ def test_zero_basement_area_is_valid() -> None:
 
     issues = validate_frame(frame)
 
-    assert not any(
-        issue.rule == "out_of_range" and issue.column == "sqft_basement"
-        for issue in issues
-    )
+    assert not any(issue.rule == "out_of_range" and issue.column == "sqft_basement" for issue in issues)
 
 
 def test_negative_living_area_is_reported() -> None:
@@ -365,11 +342,7 @@ def test_negative_living_area_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    range_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "out_of_range" and issue.column == "sqft_living"
-    )
+    range_issue = next(issue for issue in issues if issue.rule == "out_of_range" and issue.column == "sqft_living")
 
     assert range_issue.count == 1
 
@@ -385,11 +358,7 @@ def test_multiple_out_of_range_rows_are_counted() -> None:
 
     issues = validate_frame(frame)
 
-    range_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "out_of_range" and issue.column == "price"
-    )
+    range_issue = next(issue for issue in issues if issue.rule == "out_of_range" and issue.column == "price")
 
     assert range_issue.count == 2
 
@@ -417,9 +386,7 @@ def test_square_footage_relationship_violation_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    relationship_issue = next(
-        issue for issue in issues if issue.rule == "inconsistent_square_footage"
-    )
+    relationship_issue = next(issue for issue in issues if issue.rule == "inconsistent_square_footage")
 
     assert relationship_issue.column is None
     assert relationship_issue.severity == Severity.WARNING
@@ -455,9 +422,7 @@ def test_renovation_before_construction_is_reported() -> None:
 
     issues = validate_frame(frame)
 
-    year_issue = next(
-        issue for issue in issues if issue.rule == "invalid_year_relationship"
-    )
+    year_issue = next(issue for issue in issues if issue.rule == "invalid_year_relationship")
 
     assert year_issue.severity == Severity.ERROR
     assert year_issue.count == 1
@@ -497,14 +462,8 @@ def test_raw_dataset_has_expected_schema_and_known_findings() -> None:
     assert not any(issue.rule == "invalid_dates" for issue in issues)
     assert not any(issue.rule == "invalid_statezip" for issue in issues)
 
-    price_issue = next(
-        issue
-        for issue in issues
-        if issue.rule == "out_of_range" and issue.column == "price"
-    )
+    price_issue = next(issue for issue in issues if issue.rule == "out_of_range" and issue.column == "price")
     assert price_issue.count == 49
 
-    year_issue = next(
-        issue for issue in issues if issue.rule == "invalid_year_relationship"
-    )
+    year_issue = next(issue for issue in issues if issue.rule == "invalid_year_relationship")
     assert year_issue.count == 195
