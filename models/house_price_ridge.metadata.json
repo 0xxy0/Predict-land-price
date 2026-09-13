@@ -1,0 +1,32 @@
+{
+  "alpha": 1.0,
+  "dataset_sha256": "65f0ed0cdac5395380ad8b6b751017a9a2c12924d82653ed034d8629f127e0a4",
+  "evaluation_metrics": {
+    "mae": 133512.7425438135,
+    "rmse": 907820.7023979747
+  },
+  "feature_columns": [
+    "bedrooms",
+    "bathrooms",
+    "floors",
+    "waterfront",
+    "view",
+    "condition",
+    "sqft_living",
+    "sqft_lot",
+    "sqft_above",
+    "sqft_basement",
+    "age_at_sale",
+    "renovation_indicator",
+    "sale_year",
+    "sale_month",
+    "city",
+    "state",
+    "zip_code"
+  ],
+  "model_name": "ridge",
+  "model_version": "0.1.0",
+  "split_strategy": "chronological",
+  "test_size": 0.2,
+  "training_rows": 4358
+}

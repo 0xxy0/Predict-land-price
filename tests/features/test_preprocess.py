@@ -101,4 +101,3 @@ def test_transformed_row_count_equals_input(make_cleaned_frame):
     transformed = preprocessor.fit_transform(make_cleaned_frame)
 
     assert transformed.shape[0] == make_cleaned_frame.shape[0]
-
