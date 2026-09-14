@@ -31,6 +31,7 @@ dev = [
 house-profile = "house_prediction.data.profile:main"
 house-clean = "house_prediction.data.cleaner:main"
 house-train = "house_prediction.training.train:main"
+house-api = "house_prediction.api.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

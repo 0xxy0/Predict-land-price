@@ -109,3 +109,54 @@ Because RMSE squares errors, this single observation has a major impact on the o
 - **Small city samples limit subgroup conclusions**, especially for cities with 2–5 observations.
 - **Waterfront performance cannot be reliably assessed** because only 5 waterfront properties are in the test set.
 - **Multi-year temporal generalization remains untested** because all test observations are from 2014.
+
+## Run the API
+
+Install the project in the virtual environment, then start the API:
+
+```powershell
+Set-Location C:\0xxy0\house_prediction
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\house-api.exe
+```
+
+The service runs at `http://127.0.0.1:8000`.
+
+Check health and readiness:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/health
+Invoke-RestMethod http://127.0.0.1:8000/ready
+Invoke-RestMethod http://127.0.0.1:8000/model-info
+```
+
+Send a prediction request:
+
+```powershell
+$body = @{
+	date = "2014-05-02"
+	bedrooms = 3
+	bathrooms = 1.5
+	floors = 1.0
+	waterfront = 0
+	view = 0
+	condition = 3
+	sqft_living = 1340
+	sqft_lot = 7912
+	sqft_above = 1340
+	sqft_basement = 0
+	yr_built = 1955
+	yr_renovated = 0
+	city = "Seattle"
+	state = "WA"
+	zip_code = "98101"
+} | ConvertTo-Json
+
+Invoke-RestMethod http://127.0.0.1:8000/predict `
+	-Method Post `
+	-ContentType "application/json" `
+	-Body $body
+```
+
+The API loads the versioned pipeline from `models/` once at startup. Stop the
+local server with `Ctrl+C`.
