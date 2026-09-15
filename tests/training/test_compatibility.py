@@ -1,11 +1,9 @@
-import math
 from pathlib import Path
 
 from sklearn.pipeline import Pipeline
 
 from house_prediction.training.metadata import load_metadata
 from house_prediction.training.persistence import load_model
-
 
 MODEL_PATH = Path("models/house_price_ridge.joblib")
 METADATA_PATH = Path("models/house_price_ridge.metadata.json")
@@ -19,7 +17,8 @@ def test_saved_model_is_compatible() -> None:
     assert model.named_steps["model"].__class__.__name__ == "Ridge"
     assert metadata["model_version"] == "0.1.0"
     assert metadata["model_name"] == "ridge"
-    
+
+
 def test_saved_metadata_contains_required_fields() -> None:
     metadata = load_metadata(METADATA_PATH)
 
