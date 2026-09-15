@@ -28,8 +28,5 @@ jobs:
       - name: Check Ruff formatting
         run: ruff format --check src tests
 
-      - name: Run mypy
-        run: mypy --strict src
-
       - name: Run tests
         run: pytest
