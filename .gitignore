@@ -19,9 +19,10 @@ data/processed/
 data/interim/
 
 # Generated model artifacts
-models/*.joblib
-models/*.pkl
-models/*.pickle
+models/*
+!models/house_price_ridge.joblib
+!models/house_price_ridge.metadata.json
+
 
 # Logs
 *.log
@@ -40,3 +41,9 @@ dist/
 Thumbs.db
 
 plan.txt
+
+mypy.ini
+
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/

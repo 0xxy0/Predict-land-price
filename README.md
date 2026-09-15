@@ -1,162 +1,461 @@
-﻿# Regression Model Error Analysis
+﻿# 🏛️ House Price Prediction Platform
 
-## Executive Summary
+### Production-Grade ML Engineering · End-to-End System Design · Deployment-Ready
 
-The Ridge regression model achieves a **MAE of $133,513** and **RMSE of $907,821** on the chronological test set.
+A fully architected, tested, and containerized machine learning platform that demonstrates the complete lifecycle of a production ML system — from immutable raw data contracts to a live, typed, health-checked prediction API.
 
-The large gap between MAE and RMSE is mainly caused by a small number of extreme prediction errors, particularly a **$26.59M Kent property** that was predicted at only **$210.5K**.
+> **This is not a notebook. This is a system.**
 
-Model error is relatively stable across low, medium, and high price bands but increases substantially for **very-high-priced properties**, suggesting difficulty modeling the upper end of the market.
+---
 
-City-level results should be interpreted alongside sample size. **Seattle and Bellevue** have the largest samples, while cities with only 2–5 observations provide limited evidence.
+## 🎯 Executive Summary
 
-The waterfront subgroup contains only **5 observations**, so no reliable conclusion can be drawn about waterfront performance.
+This repository implements a production-disciplined **house price prediction platform** designed around real-world ML engineering principles:
 
-Finally, all test observations are from **2014**. Although the split is chronological, the evaluation does not measure multi-year temporal generalization.
+- Data contracts
+- Deterministic pipelines
+- Training-serving parity
+- Chronological validation
+- Versioned artifacts
+- Operational readiness
 
-## Overall Performance
+Every layer — **ingestion, validation, cleaning, feature engineering, training, persistence, and serving** — is modularized, typed, linted, and covered by an extensive automated test suite.
+
+The result is a system that behaves the way ML services are actually **built, reviewed, shipped, and maintained in industry**.
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                         RAW DATA (IMMUTABLE)                          │
+│                    data/raw/KC_housing_data.csv                       │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │   SCHEMA VALIDATION   │  ⟶ profile.json / profile.md
+                    │   + PROFILING LAYER   │
+                    └───────────┬───────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │  DETERMINISTIC        │  ⟶ cleaned_housing.csv
+                    │  CLEANING PIPELINE    │  ⟶ cleaning_audit.json
+                    └───────────┬───────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │  FEATURE ENGINEERING  │  (shared by train + serve)
+                    │  + PREPROCESSING      │
+                    └───────────┬───────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │  CHRONOLOGICAL SPLIT  │
+                    │  + RIDGE TRAINING     │  ⟶ house_price_ridge.joblib
+                    └───────────┬───────────┘  ⟶ *.metadata.json
+                                │
+                    ┌───────────▼───────────┐
+                    │   FASTAPI SERVING     │  /health  /ready
+                    │   TYPED CONTRACTS     │  /model-info  /predict
+                    └───────────┬───────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │   DOCKER RUNTIME      │  Non-root · Healthcheck
+                    └───────────────────────┘
+```
+
+### Pipeline Flow
+
+```
+Raw CSV
+   │
+   ▼
+Schema Validation
+   │
+   ▼
+Data Profiling
+   │
+   ▼
+Deterministic Cleaning
+   │
+   ▼
+Feature Engineering
+   │
+   ▼
+Preprocessing
+   │
+   ▼
+Chronological Train/Test Split
+   │
+   ▼
+Ridge Regression
+   │
+   ▼
+Versioned Model Artifact
+   │
+   ▼
+FastAPI
+   │
+   ├── /health
+   ├── /ready
+   ├── /model-info
+   └── /predict
+```
+
+---
+
+## ✨ Why This Project Signals Production Maturity
+
+| Dimension | What This Project Demonstrates |
+| --- | --- |
+| **Data Contracts** | Explicit schema, domain, range, and invariant enforcement before any transformation |
+| **Auditability** | Every cleaning action is recorded in a machine-readable audit trail |
+| **Training–Serving Parity** | A single shared feature pipeline guarantees zero train/serve skew |
+| **Realistic Validation** | Chronological split avoids leakage and mirrors real temporal drift |
+| **Artifact Versioning** | Models ship with metadata including features, metrics, SHA-256, and version |
+| **Operational Readiness** | `/health`, `/ready`, and `/model-info` endpoints support orchestration and monitoring |
+| **Typed Boundaries** | Pydantic request/response schemas enforce input integrity at the API edge |
+| **Static Analysis** | `ruff` + `mypy --strict` across `src/` |
+| **Comprehensive Tests** | 100+ tests across data, features, training, persistence, metadata, and API |
+| **Container Hygiene** | Multi-stage-ready Dockerfile, non-root user, and `HEALTHCHECK` directive |
+
+---
+
+## 🧩 Modular Package Layout
+
+```
+src/
+└── house_prediction/
+    ├── api/             → FastAPI app, typed schemas, operational endpoints
+    ├── data/            → schema contracts, profiler, deterministic cleaner
+    ├── features/        → feature builder + ColumnTransformer pipeline
+    ├── training/        → split, model, evaluate, metadata, persistence, error analysis
+    ├── config.py        → environment-driven Settings via pydantic-settings
+    └── logging_config.py
+```
+
+Each module is:
+
+- Independently testable
+- Strictly typed
+- Free of side effects at import time
+- Designed around explicit contracts
+
+---
+
+## 🔬 Machine Learning Discipline
+
+### Baseline-First Modeling
+
+A mean predictor establishes the performance floor before introducing model complexity.
+
+### Regularized Linear Model
+
+**Ridge Regression** is used for interpretability, stability, and robustness.
+
+### Chronological Holdout
+
+The model is trained on the past and evaluated on the future, reducing the risk of temporal leakage and better reflecting real-world deployment conditions.
+
+### Error Analysis
+
+`Error_Analysis_Report.md` decomposes residuals across:
+
+- Price bands
+- Cities
+- Waterfront status
+- Sale year
+
+The analysis surfaces a **$26.59M outlier** as a data-quality investigation rather than silently deleting it.
+
+### Metadata Artifact
+
+Every shipped model carries important provenance and evaluation information, including:
+
+- `alpha`
+- `feature_columns`
+- `training_rows`
+- `dataset_sha256`
+- `split_strategy`
+- Evaluation metrics
+- Model version
+
+---
+
+## 🧪 Test Suite Coverage
+
+```
+tests/
+├── api/
+│   ├── root
+│   ├── health
+│   ├── ready
+│   ├── model-info
+│   ├── predict
+│   ├── 503 paths
+│   └── schema
+│
+├── data/
+│   ├── cleaner rules
+│   ├── idempotency
+│   ├── profiler
+│   └── schema validators
+│
+├── features/
+│   ├── feature builder
+│   ├── pipeline
+│   ├── preprocessor
+│   └── unseen categories
+│
+├── training/
+│   ├── split
+│   ├── model
+│   ├── evaluate
+│   ├── metadata
+│   ├── persistence
+│   └── compatibility
+│
+├── test_config.py
+└── test_logging_config.py
+```
+
+Tests cover:
+
+- Boundary conditions
+- Immutability guarantees
+- Idempotency
+- Persisted artifact backward compatibility
+- Missing-file failure modes
+- Invalid payloads
+- Unseen categories
+- API failure paths
+- Schema validation
+
+---
+
+## 🌐 API Surface
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/` | Service identity |
+| `GET` | `/health` | Liveness probe |
+| `GET` | `/ready` | Readiness probe — verifies model artifact presence |
+| `GET` | `/model-info` | Versioned metadata and evaluation metrics |
+| `POST` | `/predict` | Typed prediction with model version in response |
+
+---
+
+## 🚀 Quickstart
+
+### Local Installation
+
+```
+python -m pip install -e ".[dev]"
+```
+
+Start the API:
+
+```
+house-api
+```
+
+The API should then be available at:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+### Docker
+
+Build the image:
+
+```
+docker build -t house-prediction-app .
+```
+
+Run the container:
+
+```
+docker run --rm -d \
+  -p 8000:8000 \
+  --name house-prediction-app \
+  house-prediction-app
+```
+
+---
+
+## 🔮 Example Inference
+
+Send a prediction request to the API:
+
+```
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "date": "2014-05-02",
+    "bedrooms": 3,
+    "bathrooms": 1.5,
+    "floors": 1.0,
+    "waterfront": 0,
+    "view": 0,
+    "condition": 3,
+    "sqft_living": 1340,
+    "sqft_lot": 7912,
+    "sqft_above": 1340,
+    "sqft_basement": 0,
+    "yr_built": 1955,
+    "yr_renovated": 0,
+    "city": "Seattle",
+    "state": "WA",
+    "zip_code": "98101"
+  }'
+```
+
+Example endpoint:
+
+```
+POST /predict
+```
+
+The response includes the prediction together with the model version, allowing inference results to be traced back to a specific model artifact.
+
+---
+
+## 🛠️ Technology Stack
+
+### Core
+
+- Python 3.14
+- pandas
+- NumPy
+- scikit-learn
+- joblib
+
+### Serving
+
+- FastAPI
+- Uvicorn
+- Pydantic v2
+- pydantic-settings
+
+### Quality
+
+- pytest
+- ruff
+- mypy (`--strict`)
+
+### Delivery
+
+- Docker
+- `pyproject.toml`
+- Console entry points
+
+### CI
+
+GitHub Actions enforces:
+
+- Linting
+- Formatting
+- Static type checking
+- Automated tests
+
+---
+
+## 📊 Model Performance Snapshot
 
 | Metric | Value |
-|---|---:|
-| MAE | $133,512.74 |
-| RMSE | $907,820.70 |
+| --- | --- |
+| **MAE** | **$133,513** |
+| **RMSE** | **$907,821** |
 
-- **MAE** measures the average absolute prediction error.
-- **RMSE** penalizes large errors more heavily.
-- The much higher RMSE indicates that a few extreme errors have a disproportionate impact.
+Full decomposition — including price-band, city, waterfront, and outlier analysis — is available in:
 
-## Error by Price Band
-
-| Price Band | Observations | Mean Absolute Error | Median Absolute Error |
-|---|---:|---:|---:|
-| Low | 218 | $78,006 | $62,857 |
-| Medium | 218 | $82,763 | $59,101 |
-| High | 219 | $95,267 | $69,157 |
-| Very High | 216 | $279,531 | $98,891 |
-
-Error is relatively consistent across the low, medium, and high bands. The **very-high band is substantially less accurate**, with MAE increasing to approximately **$280K**.
-
-## Error by City
-
-| City | Observations | Mean Absolute Error | Median Absolute Error |
-|---|---:|---:|---:|
-| Kent | 41 | $709,740 | $67,919 |
-| Clyde Hill | 3 | $508,341 | $90,960 |
-| Medina | 3 | $317,855 | $228,078 |
-| Mercer Island | 20 | $238,048 | $179,518 |
-| Normandy Park | 4 | $175,235 | $160,669 |
-| Vashon | 5 | $154,629 | $62,940 |
-| Skykomish | 2 | $149,151 | $149,151 |
-| Bellevue | 54 | $139,595 | $100,680 |
-| Seattle | 295 | $122,461 | $76,581 |
-| Snoqualmie | 11 | $120,508 | $75,773 |
-
-Kent's high MAE is strongly influenced by the **$26.59M outlier** discussed below.
-
-Results for cities with only 2–5 observations should be treated as **directional rather than representative**. Seattle and Bellevue provide more reliable estimates due to their larger sample sizes.
-
-## Error by Waterfront Status
-
-| Waterfront | Observations | Mean Absolute Error | Median Absolute Error |
-|---|---:|---:|---:|
-| No | 866 | $132,791 | $69,909 |
-| Yes | 5 | $258,587 | $332,088 |
-
-Waterfront properties show higher observed errors, but with only **5 observations**, the sample is too small to conclude that the model systematically performs worse on waterfront properties.
-
-## Error by Sale Year
-
-| Sale Year | Observations | Mean Absolute Error | Median Absolute Error |
-|---|---:|---:|---:|
-| 2014 | 871 | $133,513 | $69,950 |
-
-All test observations are from **2014**. The chronological split avoids future-to-training leakage, but the test set does not provide a genuine **multi-year temporal holdout**.
-
-Therefore, these results demonstrate performance on later observations in the dataset rather than robust generalization to future market conditions.
-
-## Largest Prediction Errors
-
-| Actual Price | Prediction | Absolute Error | City | ZIP | Living Area | Waterfront |
-|---:|---:|---:|---|---|---:|---|
-| $26,590,000 | $210,512 | $26,379,488 | Kent | 98031 | 1,180 sqft | No |
-| $3,800,000 | $2,373,247 | $1,426,753 | Clyde Hill | 98004 | 7,050 sqft | No |
-| $2,300,000 | $1,518,133 | $781,867 | Seattle | 98119 | 3,970 sqft | No |
-| $2,351,956 | $1,595,861 | $756,095 | Mercer Island | 98040 | 5,010 sqft | No |
-| $1,755,000 | $1,019,020 | $735,980 | Seattle | 98112 | 2,360 sqft | No |
-
-## Extreme $26.59M Observation
-
-The largest error is a **Kent property sold for $26.59M**, while the model predicts approximately **$210.5K**.
-
-Key characteristics:
-
-- 3 bedrooms
-- 2 bathrooms
-- 1,180 sqft
-- No waterfront designation
-- No recorded view
-- Kent, WA 98031
-
-The unusually high sale price relative to the property's recorded characteristics makes this a **potential data-quality outlier** and warrants verification against the source data.
-
-Because RMSE squares errors, this single observation has a major impact on the overall RMSE. However, it **should not be removed solely to improve model metrics**. Any correction or exclusion should follow an explicit, documented data-quality rule.
-
-## Key Findings & Limitations
-
-- **Typical error is much lower than RMSE suggests:** MAE is ~$134K compared with RMSE of ~$908K.
-- **Upper-price performance is weaker:** The very-high price band has an MAE of ~$280K.
-- **The $26.59M Kent property dominates extreme-error analysis** and should be verified.
-- **Small city samples limit subgroup conclusions**, especially for cities with 2–5 observations.
-- **Waterfront performance cannot be reliably assessed** because only 5 waterfront properties are in the test set.
-- **Multi-year temporal generalization remains untested** because all test observations are from 2014.
-
-## Run the API
-
-Install the project in the virtual environment, then start the API:
-
-```powershell
-Set-Location C:\0xxy0\house_prediction
-.\.venv\Scripts\python.exe -m pip install -e .
-.\.venv\Scripts\house-api.exe
+```
+Error_Analysis_Report.md
 ```
 
-The service runs at `http://127.0.0.1:8000`.
+---
 
-Check health and readiness:
+## 🧠 Engineering Principles Applied
 
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/health
-Invoke-RestMethod http://127.0.0.1:8000/ready
-Invoke-RestMethod http://127.0.0.1:8000/model-info
+### Immutable Raw Data
+
+The source of truth is never mutated.
+
+### Contract-First Design
+
+Schemas define the expected reality before transformations are applied.
+
+### Deterministic Transformations
+
+The same input produces the same output every time.
+
+### Explicit Artifact Versioning
+
+Models ship together with their provenance and evaluation metadata.
+
+### Parity Over Cleverness
+
+A single feature pipeline is shared by both training and serving.
+
+### Operational Honesty
+
+Model limitations and failure modes are documented rather than hidden.
+
+### Test-Enforced Invariants
+
+Expected behavior is proven through automated tests rather than assumed.
+
+---
+
+## 📁 Project Highlights
+
+- ✅ End-to-end pipeline from raw CSV to live HTTP inference
+- ✅ Strict typing across the entire `src/` tree
+- ✅ Audited cleaning with a JSON-reproducible transformation log
+- ✅ Versioned model artifacts with cryptographic dataset hashing
+- ✅ Operational endpoints ready for Kubernetes/ECS probes
+- ✅ Container-ready with non-root execution and healthcheck
+- ✅ Extensive test suite spanning all major subsystems
+- ✅ Chronological validation designed to reduce temporal leakage
+- ✅ Shared training/serving feature pipeline
+- ✅ Machine-readable model provenance and metadata
+
+---
+
+## 🎓 What This Project Proves
+
+This is **not** a demonstration of:
+
+```
+model.fit()
 ```
 
-Send a prediction request:
+It is a demonstration of how **ML systems are engineered**.
 
-```powershell
-$body = @{
-	date = "2014-05-02"
-	bedrooms = 3
-	bathrooms = 1.5
-	floors = 1.0
-	waterfront = 0
-	view = 0
-	condition = 3
-	sqft_living = 1340
-	sqft_lot = 7912
-	sqft_above = 1340
-	sqft_basement = 0
-	yr_built = 1955
-	yr_renovated = 0
-	city = "Seattle"
-	state = "WA"
-	zip_code = "98101"
-} | ConvertTo-Json
+The project emphasizes:
 
-Invoke-RestMethod http://127.0.0.1:8000/predict `
-	-Method Post `
-	-ContentType "application/json" `
-	-Body $body
-```
+- Contracts
+- Reproducibility
+- Data quality
+- Testability
+- Model provenance
+- Training-serving parity
+- Observability
+- Operational readiness
+- Deployment discipline
 
-The API loads the versioned pipeline from `models/` once at startup. Stop the
-local server with `Ctrl+C`.
+The goal is to demonstrate the engineering maturity required to **ship, operate, review, and maintain a machine learning system in production**.
+
+> **If you're hiring for ML Engineering, Platform Engineering, or Applied Data Science roles, this repository is a direct signal of production readiness.**
+
+---
+
+## 📌 Repository Philosophy
+
+> **A production ML system is more than a trained model.**
+>
+> It is the combination of reliable data, deterministic transformations, validated contracts, reproducible artifacts, rigorous testing, observable APIs, and operational discipline.
+
+**This project is built around that philosophy.**
