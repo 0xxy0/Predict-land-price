@@ -1,4 +1,4 @@
-﻿# 🏛️ House Price Prediction Platform
+﻿# 🏛️ Intelligent Price Prediction Platform
 
 ### Production-Grade ML Engineering · End-to-End System Design · Deployment-Ready
 
@@ -316,6 +316,7 @@ Invoke-RestMethod `
     -ContentType "application/json" `
     -Body $body
 ```
+![alt text](image.png)
 
 Example endpoint:
 
