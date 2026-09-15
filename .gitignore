@@ -39,7 +39,8 @@ dist/
 # Operating-system files
 .DS_Store
 Thumbs.db
-
+    
+# Project-specific files
 plan.txt
 
 mypy.ini

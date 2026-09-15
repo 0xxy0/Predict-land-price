@@ -289,27 +289,32 @@ docker run --rm -d \
 
 Send a prediction request to the API:
 
-```
-curl -X POST http://127.0.0.1:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "date": "2014-05-02",
-    "bedrooms": 3,
-    "bathrooms": 1.5,
-    "floors": 1.0,
-    "waterfront": 0,
-    "view": 0,
-    "condition": 3,
-    "sqft_living": 1340,
-    "sqft_lot": 7912,
-    "sqft_above": 1340,
-    "sqft_basement": 0,
-    "yr_built": 1955,
-    "yr_renovated": 0,
-    "city": "Seattle",
-    "state": "WA",
-    "zip_code": "98101"
-  }'
+**Powershell**
+```powershell
+$body = @{
+    date = "2014-05-02"
+    bedrooms = 3
+    bathrooms = 1.5
+    floors = 1.0
+    waterfront = 0
+    view = 0
+    condition = 3
+    sqft_living = 1340
+    sqft_lot = 7912
+    sqft_above = 1340
+    sqft_basement = 0
+    yr_built = 1955
+    yr_renovated = 0
+    city = "Seattle"
+    state = "WA"
+    zip_code = "98101"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+    -Uri "http://127.0.0.1:8000/predict" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body
 ```
 
 Example endpoint:
